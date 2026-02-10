@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Overload Queuing System | Traffic Control</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body class="page-body">
+    <nav class="nav-bar">
+        <a href="index.html" class="active">Dashboard</a>
+        <a href="monitoring.html">Monitoring</a>
+        <a href="control-plane.html">Control Plane</a>
+        <a href="reports.html">Reports</a>
+        <a href="alerts.html">Alerts</a>
+        <a href="feedback.html">Feedback</a>
+    </nav>
+
+
+    <div id="auth-container" class="auth-wrapper" style="margin: 2rem auto;">
+        <div class="auth-card">
+            <div class="logo" style="margin-bottom: 0;">
+                <span class="icon">🛡️</span>
+                <h1>Server Overload Queuing System </h1>
+            </div>
+            <p class="subtitle" style="text-align: center; margin-bottom: 1.5rem;">Secure Access Portal</p>
+
+            <!-- Real-Time System Status Widget -->
+            <div id="auth-system-status"
+                style="margin-bottom: 1.5rem; background: rgba(0,0,0,0.2); padding: 0.75rem; border-radius: 8px; font-size: 0.85rem; border: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span id="sys-indicator"
+                        style="width: 8px; height: 8px; background: var(--success); border-radius: 50%; display: inline-block;"></span>
+                    <span style="color: var(--text-dim);">System Status:</span>
+                </div>
+                <span id="sys-load-text" style="color: var(--text-main); font-weight: 600;">Optimal</span>
+            </div>
+
+            <!-- Auth Navigation -->
+            <div id="auth-nav" class="auth-tabs" style="margin-bottom: 1rem;">
+                <button class="tab-btn active" onclick="switchAuthTab('google')">Google</button>
+                <button class="tab-btn" onclick="switchAuthTab('email')">Email</button>
+            </div>
+
+            <!-- Google View -->
+            <div id="google-auth-view">
+                <div id="g_id_onload"
+                    data-client_id="638158714810-k4cih131svm72glpbra445mbvmtgdnng.apps.googleusercontent.com"
+                    data-context="signin" data-ux_mode="popup" data-callback="handleCredentialResponse"
+                    data-auto_prompt="false">
+                </div>
+
+                <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline"
+                    data-text="signin_with" data-size="large" data-logo_alignment="left">
+                </div>
+            </div>
+
+            <!-- Email Login View -->
+            <div id="email-auth-view" style="display: none;">
+                <div class="auth-form">
+                    <div class="input-group">
+                        <input type="email" id="login-email" placeholder="Email Address">
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="login-password" placeholder="Password">
+                    </div>
+                    <button id="login-btn" class="primary-btn">Sign In</button>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-top: 0.5rem;">
+                        <a href="#" onclick="showView('forgot-password')"
+                            style="color: var(--text-dim); text-decoration: none;">Forgot Password?</a>
+                        <a href="#" onclick="showView('signup')"
+                            style="color: var(--primary); text-decoration: none;">Create Account</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Signup View -->
+            <div id="signup-view" style="display: none;">
+                <div class="auth-form">
+                    <div class="input-group">
+                        <input type="text" id="signup-name" placeholder="Full Name">
+                    </div>
+                    <div class="input-group">
+                        <input type="email" id="signup-email" placeholder="Email Address">
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="signup-password" placeholder="Password">
+                    </div>
+                    <button id="signup-btn" class="primary-btn">Create Account</button>
+                    <div style="text-align: center; font-size: 0.8rem; margin-top: 0.5rem;">
+                        <span style="color: var(--text-dim);">Already have an account?</span>
+                        <a href="#" onclick="showView('login')"
+                            style="color: var(--primary); text-decoration: none;">Sign In</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Forgot Password View -->
+            <div id="forgot-password-view" style="display: none;">
+                <div class="auth-form">
+                    <p style="color: var(--text-dim); font-size: 0.9rem; text-align: center;">Enter your email to
+                        receive a reset link.</p>
+                    <div class="input-group">
+                        <input type="email" id="forgot-email" placeholder="Email Address">
+                    </div>
+                    <button id="forgot-btn" class="primary-btn">Send Link</button>
+                    <div style="text-align: center; font-size: 0.8rem; margin-top: 0.5rem;">
+                        <a href="#" onclick="showView('login')"
+                            style="color: var(--text-dim); text-decoration: none;">Back to Login</a>
+                    </div>
+                </div>
+            </div>
+
+            <p id="auth-message" class="auth-message"></p>
+
+            <div
+                style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--glass-border); text-align: center;">
+                <a href="admin-login.html"
+                    style="font-size: 0.8rem; color: var(--text-dim); text-decoration: none; opacity: 0.7;">Administrator
+                    Access</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="queue-dashboard" class="container" style="display: none; max-width: 600px;">
+        <header>
+            <div class="logo">
+                <span class="icon">⏳</span>
+                <h1>Waiting Queue</h1>
+            </div>
+            <p class="subtitle">Server is currently at capacity</p>
+        </header>
+
+        <div class="queue-status-card"
+            style="text-align: center; padding: 2rem; background: var(--card-bg); border-radius: 16px; border: 1px solid var(--glass-border);">
+            <h2 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Your Token Number</h2>
+            <div id="my-token"
+                style="font-size: 3rem; font-weight: 700; color: var(--primary); margin-bottom: 0.25rem;">-</div>
+            <p id="queue-priority"
+                style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.1em;">
+            </p>
+            <p style="color: var(--text-dim);">Please wait. This page will refresh in <span id="countdown">5</span>s.
+            </p>
+        </div>
+
+        <div class="log-container" style="margin-top: 1.5rem;">
+            <div class="log-header">
+                <h3>Live Waiting List</h3>
+                <button id="refresh-queue" class="text-btn">Refresh</button>
+            </div>
+            <div id="queue-list" class="log-list">
+                <!-- Queue items will appear here -->
+            </div>
+        </div>
+    </div>
+
+    <div id="main-dashboard" class="container" style="display: none;">
+        <header>
+            <div id="user-profile" class="user-profile">
+                <img id="user-avatar" src="" alt="Avatar" style="width: 32px; height: 32px; border-radius: 50%;">
+                <span id="display-name">Guest</span>
+                <button id="logout-btn" class="text-btn">Logout</button>
+            </div>
+            <div class="logo">
+                <span class="icon">🛡️</span>
+                <h1>Server Shield</h1>
+            </div>
+            <p class="subtitle">API Gateway Traffic Visualization</p>
+        </header>
+
+        <main>
+            <div class="dashboard">
+                <div class="stat-card">
+                    <div class="stat-icon">🔋</div>
+                    <div class="stat-info">
+                        <span class="label">Token Bucket</span>
+                        <span id="tokens-count" class="value">10/10</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-info">
+                        <span class="label">Active Users</span>
+                        <span id="active-users" class="value">0/20</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="actions" style="flex-direction: column; gap: 0.75rem;">
+                <div style="display: flex; gap: 1rem; width: 100%;">
+                    <select id="request-priority"
+                        style="flex: 1; padding: 1rem; border-radius: 12px; border: 1px solid var(--glass-border); background: var(--glass-bg); color: var(--text-main); font-weight: 600;">
+                        <option value="LOW">Low Priority (Guest)</option>
+                        <option value="MEDIUM" selected>Medium Priority (User)</option>
+                        <option value="HIGH">High Priority (Admin)</option>
+                    </select>
+                    <button id="send-btn" class="primary-btn" style="flex: 2;">Send Request</button>
+                </div>
+                <button id="release-btn" class="secondary-btn" style="width: 100%;">Release User Session</button>
+            </div>
+
+            <div class="log-container">
+                <div class="log-header">
+                    <h3>Request Log</h3>
+                    <button id="clear-log" class="text-btn">Clear</button>
+                </div>
+                <div id="log-list" class="log-list">
+                    <!-- Logs will appear here -->
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="app.js"></script>
+</body>
+
+</html>

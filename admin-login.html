@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal | Server Shield</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        .admin-theme {
+            --primary: #ff4757;
+            /* Red/Distinctive for Admin */
+            --primary-glow: rgba(255, 71, 87, 0.4);
+        }
+
+        .admin-badge {
+            background: rgba(255, 71, 87, 0.1);
+            color: #ff4757;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            border: 1px solid rgba(255, 71, 87, 0.2);
+        }
+
+        .password-strength {
+            height: 4px;
+            border-radius: 2px;
+            margin-top: 4px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .password-strength.weak {
+            width: 33%;
+            background: #ff4757;
+        }
+
+        .password-strength.medium {
+            width: 66%;
+            background: #ffa502;
+        }
+
+        .password-strength.strong {
+            width: 100%;
+            background: #26de81;
+        }
+
+        .password-hint {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            margin-top: 4px;
+        }
+    </style>
+</head>
+
+<body class="page-body admin-theme">
+    <nav class="nav-bar">
+        <a href="index.html">User Portal</a>
+        <a href="#" class="active">Admin Portal</a>
+    </nav>
+
+    <div id="auth-container" class="auth-wrapper" style="margin: 4rem auto;">
+        <div class="auth-card" style="border-top: 4px solid var(--primary);">
+            <div class="logo" style="margin-bottom: 0;">
+                <span class="icon">🛡️</span>
+                <h1>Server Shield <span class="admin-badge">ADMIN</span></h1>
+            </div>
+            <p class="subtitle" style="text-align: center; margin-bottom: 1.5rem;">System Administration Login</p>
+
+            <!-- Login Form -->
+            <div id="admin-login-form" class="auth-form">
+                <div class="input-group">
+                    <input type="email" id="admin-email" placeholder="Admin Email" value="admin@server.com">
+                </div>
+                <div class="input-group">
+                    <input type="password" id="admin-password" placeholder="Admin Password"
+                        autocomplete="current-password">
+                </div>
+                <button id="admin-login-btn" class="primary-btn"
+                    style="background: var(--primary); box-shadow: 0 0 15px var(--primary-glow);">Access
+                    Dashboard</button>
+                <div style="text-align: center; margin-top: 1rem; font-size: 0.8rem;">
+                    <a href="#" onclick="toggleAdminView('signup')"
+                        style="color: var(--text-dim); text-decoration: none;">Create Admin Account</a>
+                </div>
+            </div>
+
+            <!-- Signup Form -->
+            <div id="admin-signup-form" class="auth-form" style="display: none;">
+                <div class="input-group">
+                    <input type="text" id="new-admin-name" placeholder="Full Name">
+                </div>
+                <div class="input-group">
+                    <input type="email" id="new-admin-email" placeholder="Email Address">
+                </div>
+                <div class="input-group">
+                    <input type="password" id="new-admin-password" placeholder="Password (min 8 characters)"
+                        autocomplete="new-password">
+                    <div class="password-strength" id="password-strength"></div>
+                    <div class="password-hint" id="password-hint">Use 8+ characters with letters, numbers & symbols
+                    </div>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="admin-secret" placeholder="Secret Code (Required)"
+                        style="border-color: var(--primary);">
+                </div>
+                <button id="admin-signup-btn" class="primary-btn"
+                    style="background: var(--primary); box-shadow: 0 0 15px var(--primary-glow);">Create Admin</button>
+                <div style="text-align: center; margin-top: 1rem; font-size: 0.8rem;">
+                    <a href="#" onclick="toggleAdminView('login')"
+                        style="color: var(--text-dim); text-decoration: none;">Back to Login</a>
+                </div>
+            </div>
+
+            <p id="auth-message" class="auth-message"></p>
+        </div>
+    </div>
+
+    <script>
+        const API_GATEWAY = 'http://localhost:3005/api';
+        const msg = document.getElementById('auth-message');
+
+        // Password strength validation
+        const passwordInput = document.getElementById('new-admin-password');
+        const strengthBar = document.getElementById('password-strength');
+        const strengthHint = document.getElementById('password-hint');
+
+        if (passwordInput) {
+            passwordInput.addEventListener('input', (e) => {
+                const password = e.target.value;
+                const strength = calculatePasswordStrength(password);
+
+                strengthBar.className = 'password-strength';
+                if (password.length === 0) {
+                    strengthBar.className = 'password-strength';
+                    strengthHint.textContent = 'Use 8+ characters with letters, numbers & symbols';
+                } else if (strength < 3) {
+                    strengthBar.classList.add('weak');
+                    strengthHint.textContent = 'Weak password - add more characters';
+                } else if (strength < 4) {
+                    strengthBar.classList.add('medium');
+                    strengthHint.textContent = 'Medium strength - consider adding symbols';
+                } else {
+                    strengthBar.classList.add('strong');
+                    strengthHint.textContent = 'Strong password ✓';
+                }
+            });
+        }
+
+        function calculatePasswordStrength(password) {
+            let strength = 0;
+            if (password.length >= 8) strength++;
+            if (password.length >= 12) strength++;
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+            if (/[0-9]/.test(password)) strength++;
+            if (/[^a-zA-Z0-9]/.test(password)) strength++;
+            return strength;
+        }
+
+        function toggleAdminView(view) {
+            msg.textContent = '';
+            if (view === 'signup') {
+                document.getElementById('admin-login-form').style.display = 'none';
+                document.getElementById('admin-signup-form').style.display = 'block';
+            } else {
+                document.getElementById('admin-signup-form').style.display = 'none';
+                document.getElementById('admin-login-form').style.display = 'block';
+            }
+        }
+
+        document.getElementById('admin-login-btn').addEventListener('click', async () => handleAdminAuth('login'));
+        document.getElementById('admin-signup-btn').addEventListener('click', async () => handleAdminAuth('signup'));
+
+        async function handleAdminAuth(type) {
+            let payload = {};
+
+            if (type === 'login') {
+                const email = document.getElementById('admin-email').value;
+                const password = document.getElementById('admin-password').value;
+                payload = { email, password };
+                if (!email || !password) return showError('Please enter credentials');
+            } else {
+                const name = document.getElementById('new-admin-name').value;
+                const email = document.getElementById('new-admin-email').value;
+                const password = document.getElementById('new-admin-password').value;
+                const secretCode = document.getElementById('admin-secret').value;
+
+                if (!secretCode) return showError('Secret Code is required');
+                if (!name || !email || !password) return showError('Please fill all fields');
+
+                // Client-side password validation
+                if (password.length < 8) {
+                    return showError('Password must be at least 8 characters');
+                }
+
+                payload = { name, email, password, secretCode };
+            }
+
+            try {
+                const endpoint = type === 'login' ? '/auth/login' : '/auth/signup';
+                const res = await fetch(`${API_GATEWAY}${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    // Store JWT tokens
+                    if (data.accessToken) {
+                        localStorage.setItem('access_token', data.accessToken);
+                    }
+                    if (data.refreshToken) {
+                        localStorage.setItem('refresh_token', data.refreshToken);
+                    }
+
+                    // Store user info
+                    localStorage.setItem('user_token', JSON.stringify(data.user));
+
+                    if (data.user.role === 'admin') {
+                        console.log('[AUTH] Login successful, redirecting to monitoring...');
+                        window.location.href = 'monitoring.html';
+                    } else {
+                        showError('Access Denied: Invalid admin credentials', 'var(--warning)');
+                    }
+                } else {
+                    // Handle specific error codes
+                    if (data.code === 'ACCOUNT_LOCKED') {
+                        const minutes = data.remainingMinutes || 15;
+                        showError(`🔒 ${data.message || `Account locked for ${minutes} minutes`}`, '#ff4757');
+                    } else if (data.remainingAttempts !== undefined) {
+                        showError(`${data.message} (${data.remainingAttempts} attempts remaining)`, '#ffa502');
+                    } else {
+                        showError(data.message || 'Authentication failed');
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+                showError('Connection Failed - Please check if the server is running');
+            }
+        }
+
+        function showError(text, color = 'var(--error)') {
+            msg.textContent = text;
+            msg.style.color = color;
+        }
+    </script>
+</body>
+
+</html>

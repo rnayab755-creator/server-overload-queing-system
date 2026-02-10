@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Monitoring | Server Shield</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body class="page-body">
+    <nav class="nav-bar">
+        <a href="index.html">User Portal</a>
+        <a href="monitoring.html" class="active">Monitoring</a>
+        <a href="control-plane.html">Control Plane</a>
+        <a href="reports.html">Reports</a>
+        <a href="alerts.html">Alerts</a>
+        <a href="feedback.html">Feedback</a>
+        <a href="#" onclick="logout()" style="color: var(--primary);">Logout</a>
+    </nav>
+
+    <div class="page-container">
+        <header>
+            <div class="logo">
+                <span class="icon">📊</span>
+                <h1>Real-Time Monitoring</h1>
+            </div>
+            <div style="text-align: right;">
+                <p class="subtitle" style="margin-bottom: 0.25rem;">Live visualization of API Gateway</p>
+                <div
+                    style="font-size: 0.8rem; display: flex; gap: 1rem; justify-content: flex-end; align-items: center;">
+                    <span id="conn-status" style="color: var(--success); font-weight: 600;">● Connected</span>
+                    <span id="latency" style="color: var(--text-dim);">Latency: --ms</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="dashboard">
+            <div class="stat-card">
+                <div class="stat-info">
+                    <span class="label">Incoming Traffic</span>
+                    <span id="req-rate" class="value">0 Req/s</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-info">
+                    <span class="label">Active Instances</span>
+                    <span id="instance-count" class="value">1</span>
+                </div>
+            </div>
+        </div>
+
+        <section class="doc-section">
+            <h2>Current Load Status</h2>
+            <div class="stat-card" style="width: 100%; display: block;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span class="label">User Capacity</span>
+                    <span id="capacity-text" class="value" style="font-size: 1rem;">0/50</span>
+                </div>
+                <div class="progress-container">
+                    <div id="capacity-bar" class="progress-bar"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="doc-section">
+            <h2>Token Bucket Health</h2>
+            <div class="stat-card" style="width: 100%; display: block;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span class="label">Token Availability</span>
+                    <span id="token-text" class="value" style="font-size: 1rem;">0/40</span>
+                </div>
+                <div class="progress-container">
+                    <div id="token-bar" class="progress-bar" style="background: var(--success);"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="doc-section">
+            <h2>Queue Breakdown</h2>
+            <div class="dashboard" style="grid-template-columns: repeat(3, 1fr);">
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <span class="label">High Prio</span>
+                        <span id="q-high" class="value">0</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <span class="label">Medium Prio</span>
+                        <span id="q-med" class="value">0</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <span class="label">Low Prio</span>
+                        <span id="q-low" class="value">0</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="doc-section">
+            <h2>Server Cluster Status</h2>
+            <p class="subtitle" style="font-size: 0.8rem; margin-top: -0.5rem; margin-bottom: 1rem;">Click a server to
+                view detailed metrics</p>
+            <div id="backend-grid" class="dashboard"
+                style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 1rem;">
+                <!-- Backends will be injected here -->
+            </div>
+        </section>
+
+        <section id="server-inspector" class="doc-section"
+            style="display: none; border: 2px solid var(--primary); border-radius: 12px; padding: 1.5rem; background: rgba(59, 130, 246, 0.05);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <h2 id="inspect-title" style="margin-bottom: 0.25rem;">Server Inspector: Port ----</h2>
+                    <p id="inspect-url" class="subtitle" style="margin-bottom: 1rem;">URL: http://localhost:----</p>
+                </div>
+                <button onclick="closeInspector()"
+                    style="background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 1.5rem;">×</button>
+            </div>
+            <div class="dashboard" style="grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <span class="label">Total Requests</span>
+                        <span id="inspect-requests" class="value">0</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <span class="label">Avg Latency</span>
+                        <span id="inspect-latency" class="value">0ms</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <span class="label">Active Connections</span>
+                        <span id="inspect-active" class="value">0</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="doc-section">
+            <h2>System Controls</h2>
+            <div class="dashboard" style="grid-template-columns: 1fr 1fr; gap: 1rem;">
+
+                <!-- Circuit Breaker Panel -->
+                <div class="stat-card" style="display: block;">
+                    <h3>Circuit Breaker & Faults</h3>
+                    <div style="margin-top: 1rem; font-size: 0.9rem;">
+                        <p>Status: <span id="cb-state" style="font-weight: bold;">CLOSED</span></p>
+                        <p>Failures: <span id="cb-failures">0</span></p>
+                    </div>
+                    <div style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button onclick="toggleFault('injectError')" id="btn-fault-error"
+                            style="padding: 0.5rem; background: var(--bg-body); border: 1px solid var(--text-dim); color: var(--text-main); cursor: pointer; border-radius: 4px;">Simulate
+                            Errors</button>
+                        <button onclick="toggleFault('injectLatency')" id="btn-fault-latency"
+                            style="padding: 0.5rem; background: var(--bg-body); border: 1px solid var(--text-dim); color: var(--text-main); cursor: pointer; border-radius: 4px;">Simulate
+                            Latency</button>
+                    </div>
+                </div>
+
+                <!-- Stress Test Panel -->
+                <div class="stat-card" style="display: block;">
+                    <h3>Stress Test</h3>
+                    <div style="margin-top: 1rem; font-size: 0.9rem;">
+                        <p>Generate simulated traffic from this dashboard.</p>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <button id="btn-stress" onclick="toggleStressTest()"
+                            style="width: 100%; padding: 0.8rem; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Start
+                            Stress Test</button>
+                        <p id="stress-status" style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-dim);">
+                            Status: Idle</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Security Check
+        const user = JSON.parse(localStorage.getItem('user_token'));
+        if (!user || user.role !== 'admin') {
+            window.location.href = 'admin-login.html';
+        }
+
+        const API_BASE = 'http://localhost:3005/api';
+
+        let selectedServerUrl = null;
+
+        async function updateStats() {
+            const start = Date.now();
+            try {
+                const res = await fetch(`${API_BASE}/system/metrics`);
+                const data = await res.json();
+                const latency = Date.now() - start;
+
+                // Update Network Stats
+                document.getElementById('latency').textContent = `Latency: ${latency}ms`;
+                const connEl = document.getElementById('conn-status');
+                connEl.textContent = '● Connected';
+                connEl.style.color = 'var(--success)';
+
+                // Update Overview
+                document.getElementById('req-rate').textContent = `${data.traffic.reqPerSec} Req/s`;
+                document.getElementById('instance-count').textContent = data.system.instanceCount;
+
+                // Update Capacity Bar
+                const capPct = (data.resources.activeUsers / data.resources.maxUsers) * 100;
+                document.getElementById('capacity-text').textContent = `${data.resources.activeUsers}/${data.resources.maxUsers}`;
+                document.getElementById('capacity-bar').style.width = `${Math.min(100, capPct)}%`;
+
+                // Update Token Bar
+                const tokenPct = (data.resources.tokens / data.resources.capacity) * 100;
+                document.getElementById('token-text').textContent = `${Math.floor(data.resources.tokens)}/${data.resources.capacity}`;
+                document.getElementById('token-bar').style.width = `${Math.min(100, tokenPct)}%`;
+
+                // Update Queues
+                document.getElementById('q-high').textContent = data.queues.HIGH;
+                document.getElementById('q-med').textContent = data.queues.MEDIUM;
+                document.getElementById('q-low').textContent = data.queues.LOW;
+
+                // Update Circuit Breaker Stats
+                const cbRes = await fetch(`${API_BASE}/system/circuit-breaker`);
+                const cbData = await cbRes.json();
+
+                const cbStateEl = document.getElementById('cb-state');
+                cbStateEl.textContent = cbData.state;
+                cbStateEl.style.color = cbData.state === 'CLOSED' ? 'var(--success)' : 'var(--error)';
+                document.getElementById('cb-failures').textContent = cbData.failures;
+
+                // Update Buttons State
+                updateFaultButtons(cbData.config);
+
+                // Update Backend Cluster
+                const grid = document.getElementById('backend-grid');
+                grid.innerHTML = '';
+                if (data.system.backends) {
+                    data.system.backends.forEach(be => {
+                        const port = be.url.split(':').pop();
+                        const card = document.createElement('div');
+                        card.className = 'stat-card';
+                        card.style.cursor = 'pointer';
+                        card.style.borderTop = be.healthy ? '4px solid var(--success)' : '4px solid var(--error)';
+                        if (selectedServerUrl === be.url) {
+                            card.style.boxShadow = '0 0 15px var(--primary)';
+                            card.style.borderColor = 'var(--primary)';
+                        }
+
+                        card.onclick = () => inspectServer(be);
+
+                        card.innerHTML = `
+                            <div class="stat-info">
+                                <span class="label">Port ${port}</span>
+                                <span class="value" style="font-size: 0.8rem; color: ${be.healthy ? 'var(--success)' : 'var(--error)'};">
+                                    ${be.healthy ? 'ONLINE' : 'OFFLINE'}
+                                </span>
+                            </div>
+                        `;
+                        grid.appendChild(card);
+                    });
+                }
+
+                // Update Inspector if open
+                if (selectedServerUrl && data.system.backends) {
+                    const be = data.system.backends.find(b => b.url === selectedServerUrl);
+                    if (be) updateInspectorDisplay(be);
+                }
+
+            } catch (err) {
+                console.error("Failed to fetch monitoring data", err);
+                // ... (error handling remains same)
+            }
+        }
+
+        function updateFaultButtons(config) {
+            const btnErr = document.getElementById('btn-fault-error');
+            const btnLat = document.getElementById('btn-fault-latency');
+
+            if (config.injectError) {
+                btnErr.style.background = 'var(--error)';
+                btnErr.style.color = 'white';
+                btnErr.textContent = 'Stop Errors';
+            } else {
+                btnErr.style.background = 'var(--bg-body)';
+                btnErr.style.color = 'var(--text-main)';
+                btnErr.textContent = 'Simulate Errors';
+            }
+
+            if (config.injectLatency) {
+                btnLat.style.background = 'var(--warning)';
+                btnLat.style.color = 'black';
+                btnLat.textContent = 'Stop Latency';
+            } else {
+                btnLat.style.background = 'var(--bg-body)';
+                btnLat.style.color = 'var(--text-main)';
+                btnLat.textContent = 'Simulate Latency';
+            }
+        }
+
+        function inspectServer(be) {
+            selectedServerUrl = be.url;
+            document.getElementById('server-inspector').style.display = 'block';
+            document.getElementById('inspect-title').textContent = `Server Inspector: Port ${be.url.split(':').pop()}`;
+            document.getElementById('inspect-url').textContent = `URL: ${be.url}`;
+            updateInspectorDisplay(be);
+        }
+
+        function updateInspectorDisplay(be) {
+            document.getElementById('inspect-requests').textContent = be.requests || 0;
+            document.getElementById('inspect-latency').textContent = `${Math.round(be.avgLatency || 0)}ms`;
+            document.getElementById('inspect-active').textContent = be.active || 0;
+        }
+
+        function closeInspector() {
+            selectedServerUrl = null;
+            document.getElementById('server-inspector').style.display = 'none';
+        }
+
+        async function toggleFault(type) {
+            // Get current first (or assume toggle) - simplified: assume we toggle based on button state, 
+            // but better to fetch current config or just send partial update.
+            // We'll read the button state to know what to send, or just fetch config first.
+            // For speed, let's fetch config first.
+            const res = await fetch(`${API_BASE}/system/circuit-breaker`);
+            const data = await res.json();
+            const current = data.config[type];
+
+            await fetch(`${API_BASE}/system/faults`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ [type]: !current })
+            });
+            updateStats(); // Refresh immediately
+        }
+
+        let stressInterval;
+        function toggleStressTest() {
+            const btn = document.getElementById('btn-stress');
+            const status = document.getElementById('stress-status');
+
+            if (stressInterval) {
+                clearInterval(stressInterval);
+                stressInterval = null;
+                btn.textContent = 'Start Stress Test';
+                btn.style.background = 'var(--primary)';
+                status.textContent = 'Status: Idle';
+            } else {
+                btn.textContent = 'Stop Stress Test';
+                btn.style.background = 'var(--error)';
+                status.textContent = 'Status: Sending ~10 req/s...';
+
+                stressInterval = setInterval(() => {
+                    // Send fire-and-forget requests
+                    fetch(`${API_BASE}/request`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            email: `stress${Math.floor(Math.random() * 1000)}@test.com`,
+                            name: 'StressBot',
+                            priority: 'LOW'
+                        })
+                    }).catch(() => { }); // Ignore errors
+                }, 100); // 10 req/s
+            }
+        }
+
+
+        setInterval(updateStats, 1000);
+        updateStats();
+
+        // Logout from Monitoring
+        window.logout = function () {
+            localStorage.removeItem('user_token');
+            window.location.href = 'admin-login.html';
+        }
+    </script>
+</body>
+
+</html>

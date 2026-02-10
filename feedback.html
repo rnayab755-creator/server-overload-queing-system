@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback | Server Shield</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body class="page-body">
+    <nav class="nav-bar">
+        <a href="index.html">User Portal</a>
+        <a href="monitoring.html">Monitoring</a>
+        <a href="control-plane.html">Control Plane</a>
+        <a href="reports.html">Reports</a>
+        <a href="alerts.html">Alerts</a>
+        <a href="feedback.html" class="active">Feedback</a>
+        <a href="#" onclick="logout()" style="color: var(--primary);">Logout</a>
+    </nav>
+
+    <div class="page-container">
+        <header>
+            <div class="logo">
+                <span class="icon">💬</span>
+                <h1>Support & Feedback</h1>
+            </div>
+            <p class="subtitle">We value your experience with the Server Shield gateway</p>
+        </header>
+
+        <section class="auth-form" style="max-width: 600px; margin: 0 auto;">
+            <div class="input-group">
+                <input type="text" id="feedback-name" placeholder="Your Name">
+            </div>
+            <div class="input-group">
+                <input type="email" id="feedback-email" placeholder="Email Address">
+            </div>
+            <div class="input-group">
+                <select id="issue-type"
+                    style="width: 100%; padding: 0.8rem 1rem; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 10px; color: var(--text-main); outline: none;">
+                    <option value="latancy">Network Latency / Lag</option>
+                    <option value="queue">Queue Waiting Time</option>
+                    <option value="auth">Authentication Issue</option>
+                    <option value="other">Other Feedback</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <textarea id="feedback-msg" placeholder="Describe your experience..."
+                    style="width: 100%; height: 120px; padding: 0.8rem 1rem; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 10px; color: var(--text-main); outline: none; resize: none;"></textarea>
+            </div>
+            <button id="submit-feedback" class="primary-btn">Submit Feedback</button>
+            <p id="feedback-status"
+                style="text-align: center; font-size: 0.875rem; color: var(--success); display: none;">Thank you for
+                your feedback! Our team will review it.</p>
+        </section>
+    </div>
+
+    <script>
+        document.getElementById('submit-feedback').addEventListener('click', () => {
+            const status = document.getElementById('feedback-status');
+            status.style.display = 'block';
+
+            // Clear inputs
+            document.getElementById('feedback-name').value = '';
+            document.getElementById('feedback-email').value = '';
+            document.getElementById('feedback-msg').value = '';
+
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 3000);
+        });
+    </script>
+</body>
+
+</html>

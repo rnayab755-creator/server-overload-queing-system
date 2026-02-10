@@ -1,0 +1,39 @@
+[
+  {
+    "name": "Test User",
+    "email": "test@example.com",
+    "passwordHash": "eaaa4a79c43019473cc37be32ede6ea36c962bdf821fafbecc573c6931f63ea7",
+    "provider": "local",
+    "createdAt": "2026-01-06T09:19:46.242Z"
+  },
+  {
+    "name": "ss",
+    "email": "sathya@gmail.com",
+    "passwordHash": "5994471abb01112afcc18159f6cc74b4f511b99806da59b3caf5a9c173cacfc5",
+    "provider": "local",
+    "createdAt": "2026-01-06T09:24:24.460Z"
+  },
+  {
+    "name": "ss",
+    "email": "ss",
+    "passwordHash": "$2b$12$11nWYJlJsFkhsg43M1dh2OMnU5eeEosud4sTxcnglB.7kh3hVfF.2",
+    "provider": "local",
+    "createdAt": "2026-01-07T05:53:17.577Z"
+  },
+  {
+    "name": "System Admin",
+    "email": "admin@server.com",
+    "passwordHash": "$2b$12$7dEfdDyeqL4v6etRlekIp.gFPZc5dwDYihsWNvq.lA6Tdkn91nNAm",
+    "provider": "local",
+    "role": "admin",
+    "createdAt": "2026-01-08T08:22:56.114Z"
+  },
+  {
+    "name": "Test User New",
+    "email": "testnew@example.com",
+    "passwordHash": "6faba6e4ed724c5b54fad19eca98923e2198cdbba78db5e74672c83217fb33a6",
+    "provider": "local",
+    "role": "user",
+    "createdAt": "2026-02-03T06:06:46.281Z"
+  }
+]

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Reports | Server Shield</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 2rem;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .report-table th,
+        .report-table td {
+            padding: 1.25rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .report-table th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+
+        .report-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .status-online {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .status-offline {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .load-stable {
+            color: #15803d;
+        }
+
+        .load-overload {
+            color: #b91c1c;
+            font-weight: bold;
+        }
+
+        .metric-value {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .metric-unit {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-left: 2px;
+        }
+    </style>
+</head>
+
+<body class="page-body">
+    <nav class="nav-bar">
+        <a href="index.html">User Portal</a>
+        <a href="monitoring.html">Monitoring</a>
+        <a href="control-plane.html">Control Plane</a>
+        <a href="reports.html" class="active">Reports</a>
+        <a href="alerts.html">Alerts</a>
+        <a href="#" onclick="logout()" style="color: var(--primary);">Logout</a>
+    </nav>
+
+    <div class="page-container">
+        <header>
+            <div class="logo">
+                <span class="icon">📋</span>
+                <h1>System Fleet Report</h1>
+            </div>
+            <div style="text-align: right;">
+                <p class="subtitle">Detailed Real-Time Server Performance</p>
+                <span id="last-sync" style="font-size: 0.8rem; color: var(--text-dim);">Last Sync: --:--:--</span>
+            </div>
+        </header>
+
+        <section class="doc-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>Fleet Overview</h2>
+                <button onclick="downloadReport()" class="btn-secondary"
+                    style="padding: 0.5rem 1rem; font-size: 0.8rem;">Export CSV</button>
+            </div>
+
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>Server ID (Port)</th>
+                        <th>Health</th>
+                        <th>Req Rate</th>
+                        <th>Active</th>
+                        <th>Load (CPU/RAM)</th>
+                        <th>Status</th>
+                        <th>Avg Latency</th>
+                        <th>Rejections</th>
+                        <th>Last Seen</th>
+                    </tr>
+                </thead>
+                <tbody id="report-body">
+                    <!-- Data will be injected here -->
+                </tbody>
+            </table>
+        </section>
+    </div>
+
+    <script>
+        // Security Check
+        const user = JSON.parse(localStorage.getItem('user_token'));
+        if (!user || user.role !== 'admin') {
+            window.location.href = 'admin-login.html';
+        }
+
+        const API_BASE = 'http://localhost:3005/api';
+
+        async function updateReport() {
+            try {
+                const res = await fetch(`${API_BASE}/system/metrics`);
+                const data = await res.json();
+
+                const tableBody = document.getElementById('report-body');
+                tableBody.innerHTML = '';
+
+                data.system.backends.forEach(be => {
+                    const port = be.url.split(':').pop();
+                    const row = document.createElement('tr');
+
+                    const healthClass = be.healthy ? 'status-online' : 'status-offline';
+                    const loadClass = be.loadStatus === 'OVERLOAD' ? 'load-overload' : 'load-stable';
+
+                    row.innerHTML = `
+                        <td><span class="metric-value">Server ${port}</span></td>
+                        <td><span class="status-badge ${healthClass}">${be.healthy ? 'ONLINE' : 'OFFLINE'}</span></td>
+                        <td>
+                            <div style="display: flex; flex-direction: column;">
+                                <span class="metric-value">${be.requestsLastPeriod || 0} <span class="metric-unit">req/2s</span></span>
+                                <span style="font-size: 0.7rem; color: var(--text-dim);">${be.requests || 0} total</span>
+                            </div>
+                        </td>
+                        <td><span class="metric-value">${be.active || 0}</span></td>
+                        <td>
+                            <div style="font-size: 0.85rem;">
+                                <span class="metric-value">${be.cpu || '0%'}</span> <span class="metric-unit">CPU</span><br>
+                                <span class="metric-value">${be.memory || '0%'}</span> <span class="metric-unit">RAM</span>
+                            </div>
+                        </td>
+                        <td><span class="${loadClass}">${be.loadStatus || 'STABLE'}</span></td>
+                        <td><span class="metric-value">${Math.round(be.avgLatency || 0)}</span><span class="metric-unit">ms</span></td>
+                        <td><span class="metric-value" style="color: ${be.rejected > 0 ? 'var(--error)' : 'inherit'}">${be.rejected || 0}</span></td>
+                        <td style="font-size: 0.8rem; color: var(--text-dim);">${new Date(be.lastUpdated).toLocaleTimeString()}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+                document.getElementById('last-sync').textContent = `Last Sync: ${new Date().toLocaleTimeString()}`;
+
+            } catch (err) {
+                console.error("Failed to fetch report data", err);
+            }
+        }
+
+        function downloadReport() {
+            const rows = Array.from(document.querySelectorAll('.report-table tr'));
+            const csvContent = rows.map(row => {
+                return Array.from(row.cells).map(cell => cell.textContent.trim().replace(/\s+/g, ' ')).join(',');
+            }).join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('hidden', '');
+            a.setAttribute('href', url);
+            a.setAttribute('download', `system_report_${new Date().getTime()}.csv`);
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        setInterval(updateReport, 2000);
+        updateReport();
+
+        window.logout = function () {
+            localStorage.removeItem('user_token');
+            window.location.href = 'admin-login.html';
+        }
+    </script>
+</body>
+
+</html>

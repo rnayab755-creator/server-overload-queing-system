@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centralized Control Plane | Server Shield</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body class="page-body">
+    <nav class="nav-bar">
+        <a href="index.html">User Portal</a>
+        <a href="monitoring.html">Monitoring</a>
+        <a href="control-plane.html" class="active">Control Plane</a>
+        <a href="reports.html">Reports</a>
+        <a href="alerts.html">Alerts</a>
+        <a href="#" onclick="logout()" style="color: var(--primary);">Logout</a>
+    </nav>
+
+    <div class="page-container">
+        <header>
+            <div class="logo">
+                <span class="icon">🎮</span>
+                <h1>Centralized Control Plane</h1>
+            </div>
+            <div style="text-align: right;">
+                <p class="subtitle">Shared Policy & Fleet Management</p>
+                <span id="sync-status" style="color: var(--success); font-size: 0.8rem;">● State Synchronized</span>
+            </div>
+        </header>
+
+        <!-- Resource Utilization Awareness Section -->
+        <section class="doc-section">
+            <h2>Real-Time Resource Awareness</h2>
+            <div class="dashboard" style="grid-template-columns: 1fr 1fr;">
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <span class="label">CPU Utilization</span>
+                        <span id="cpu-load" class="value">0%</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <span class="label">Memory Usage</span>
+                        <span id="mem-usage" class="value">0%</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Traffic Profiling Section -->
+        <section class="doc-section">
+            <h2>Learning-based Traffic Profiling</h2>
+            <div class="stat-card" style="width: 100%; display: block;">
+                <p style="margin-bottom: 1rem; color: var(--text-dim); font-size: 0.9rem;">The system is learning your
+                    traffic patterns to predict anomalies.</p>
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--bg-body); border-radius: 8px;">
+                    <div>
+                        <span class="label">Estimated Peak Rate</span>
+                        <p id="peak-estimation" style="font-weight: 600; font-size: 1.2rem;">Unknown</p>
+                    </div>
+                    <div>
+                        <span class="label">Current vs Historical</span>
+                        <p id="historical-comp" style="color: var(--success);">Stable</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Distribution & Scalability Section -->
+        <section class="doc-section">
+            <h2>Fleet Configuration</h2>
+            <div class="stat-card" style="display: block; padding: 1.5rem;">
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Global Admission Threshold
+                        (Max Users)</label>
+                    <input type="range" id="maxUsersRange" min="5" max="200" value="50"
+                        style="width: 100%; accent-color: var(--primary);"
+                        oninput="updateRangeLabel('maxUsersValue', this.value)">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-top: 0.3rem;">
+                        <span>Strict (5)</span>
+                        <span id="maxUsersValue" style="color: var(--primary); font-weight: bold;">50</span>
+                        <span>High Capacity (200)</span>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Distributed Rate Limit
+                        (Refill Rate)</label>
+                    <input type="range" id="refillRateRange" min="1" max="10" value="3"
+                        style="width: 100%; accent-color: var(--secondary);"
+                        oninput="updateRangeLabel('refillRateValue', this.value)">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-top: 0.3rem;">
+                        <span>1 tps</span>
+                        <span id="refillRateValue" style="color: var(--secondary); font-weight: bold;">3</span>
+                        <span>10 tps</span>
+                    </div>
+                </div>
+
+                <button onclick="applyGlobalConfig()"
+                    style="width: 100%; padding: 1rem; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 1rem; transition: transform 0.2s;">
+                    Apply to All Gateway Instances
+                </button>
+            </div>
+        </section>
+
+        <!-- Recovery Policy Section -->
+        <section class="doc-section">
+            <h2>Load Recovery Policy</h2>
+            <div id="recovery-status-card" class="stat-card"
+                style="display: block; border-left: 5px solid var(--text-dim);">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div id="recovery-indicator"
+                        style="width: 12px; height: 12px; background: var(--text-dim); border-radius: 50%;"></div>
+                    <div>
+                        <h3 id="recovery-title">Status: Normal Operation</h3>
+                        <p id="recovery-desc" style="font-size: 0.8rem; color: var(--text-dim);">The system is currently
+                            handling traffic based on primary policies.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Infrastructure Management Section -->
+        <section class="doc-section">
+            <h2>Infrastructure Management</h2>
+            <div class="stat-card" style="display: block; padding: 1.5rem;">
+                <p style="margin-bottom: 1.5rem; color: var(--text-dim); font-size: 0.9rem;">
+                    Spawn new application server instances dynamically to increase total cluster capacity.
+                    New servers are automatically integrated into the load balancer.
+                </p>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button id="btn-provision" onclick="provisionServer()"
+                        style="flex: 1; padding: 1rem; background: var(--secondary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 1rem; transition: all 0.2s;">
+                        Provision New Backend Server
+                    </button>
+                    <div id="provision-loader"
+                        style="display: none; width: 24px; height: 24px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: var(--secondary); animation: spin 1s linear infinite;">
+                    </div>
+                </div>
+                <p id="provision-status"
+                    style="margin-top: 1rem; font-size: 0.8rem; font-weight: 600; text-align: center; display: none;">
+                </p>
+            </div>
+        </section>
+    </div>
+
+    <style>
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        #btn-provision:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            filter: brightness(1.1);
+        }
+
+        #btn-provision:active {
+            transform: translateY(0);
+        }
+
+        #btn-provision:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+    </style>
+
+    <script>
+        const API_BASE = 'http://localhost:3005/api/system';
+
+        function updateRangeLabel(id, val) {
+            document.getElementById(id).innerText = val;
+        }
+
+        async function loadConfig() {
+            try {
+                const res = await fetch(`${API_BASE}/control/config`);
+                const data = await res.json();
+
+                document.getElementById('maxUsersRange').value = data.maxUsers;
+                document.getElementById('maxUsersValue').innerText = data.maxUsers;
+                document.getElementById('refillRateRange').value = data.refillRate;
+                document.getElementById('refillRateValue').innerText = data.refillRate;
+
+                // Recovery status
+                const card = document.getElementById('recovery-status-card');
+                const indicator = document.getElementById('recovery-indicator');
+                const title = document.getElementById('recovery-title');
+                if (data.recoveryPhase) {
+                    card.style.borderLeftColor = 'var(--warning)';
+                    indicator.style.background = 'var(--warning)';
+                    title.innerText = 'Status: Recovery Phase Active';
+                    document.getElementById('recovery-desc').innerText = 'Traffic is being throttled and slowly ramped back up after a failure.';
+                } else {
+                    card.style.borderLeftColor = 'var(--success)';
+                    indicator.style.background = 'var(--success)';
+                    title.innerText = 'Status: Normal Operation';
+                }
+
+            } catch (err) { console.error("Control plane fetch error", err); }
+        }
+
+        async function updateLiveMetrics() {
+            try {
+                const res = await fetch(`${API_BASE}/metrics`);
+                const data = await res.json();
+
+                document.getElementById('cpu-load').innerText = data.system.cpuLoad;
+                document.getElementById('mem-usage').innerText = data.system.memoryUsage;
+
+                // Anomaly detection display
+                const historicalText = document.getElementById('historical-comp');
+                if (data.system.predictedStatus === 'OVERLOAD') {
+                    historicalText.innerText = 'Anomaly Detected / High Load';
+                    historicalText.style.color = 'var(--error)';
+                    document.getElementById('peak-estimation').innerText = 'EXCEEDED';
+                } else {
+                    historicalText.innerText = 'Stable';
+                    historicalText.style.color = 'var(--success)';
+                    document.getElementById('peak-estimation').innerText = 'Learned Pattern: ~' + data.traffic.reqPerSec + ' req/s';
+                }
+
+            } catch (err) { }
+        }
+
+        async function applyGlobalConfig() {
+            const payload = {
+                maxUsers: parseInt(document.getElementById('maxUsersRange').value),
+                capacity: 60, // Increased buffer for higher limits
+                refillRate: parseInt(document.getElementById('refillRateRange').value)
+            };
+
+            const res = await fetch(`${API_BASE}/control/update`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) alert("Global policy updated across all gateways.");
+        }
+
+        async function provisionServer() {
+            const btn = document.getElementById('btn-provision');
+            const loader = document.getElementById('provision-loader');
+            const status = document.getElementById('provision-status');
+
+            btn.disabled = true;
+            loader.style.display = 'block';
+            status.style.display = 'block';
+            status.innerText = 'Initializing server provisioning...';
+            status.style.color = 'var(--text-dim)';
+
+            try {
+                const res = await fetch(`http://localhost:3005/api/system/servers/add`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    status.innerText = `Success! ${data.message}. Transitioning to online...`;
+                    status.style.color = 'var(--success)';
+                } else {
+                    throw new Error(data.message || 'Failed to provision server');
+                }
+            } catch (err) {
+                status.innerText = `Error: ${err.message}`;
+                status.style.color = 'var(--error)';
+            } finally {
+                loader.style.display = 'none';
+                setTimeout(() => {
+                    btn.disabled = false;
+                    status.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        setInterval(updateLiveMetrics, 1000);
+        setInterval(loadConfig, 2000);
+        loadConfig();
+        updateLiveMetrics();
+
+        window.logout = function () {
+            localStorage.removeItem('user_token');
+            window.location.href = 'admin-login.html';
+        }
+    </script>
+</body>
+
+</html>
