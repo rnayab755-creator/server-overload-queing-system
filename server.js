@@ -649,13 +649,14 @@ app.listen(PORT, () => {
     console.log(`API Gateway (Distributed & Fairness Enabled) running on port ${PORT}`);
 });
 
-const path = require("path");
+const path = require('path');
 
 app.use(express.static(path.join(__dirname, "build")));
 
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "build", "index.html"));
 });
+
 
 
 
