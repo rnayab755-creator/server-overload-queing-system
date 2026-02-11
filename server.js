@@ -11,9 +11,6 @@ const os = require('os');
 const { spawn } = require('child_process');
 require('dotenv').config();
 
-app.get("/", (req, res) => {
-  res.send("Server Overload Queuing System API is running 🚀");
-});
 
 
 const TokenBucket = require("./rateLimiter");
@@ -651,6 +648,12 @@ const PORT = process.env.PORT || 3005;
 app.listen(PORT, () => {
     console.log(`API Gateway (Distributed & Fairness Enabled) running on port ${PORT}`);
 });
+
+app.get("/", (req, res) => {
+  res.send("Server Overload Queuing System API is running 🚀");
+});
+
+
 
 
 
