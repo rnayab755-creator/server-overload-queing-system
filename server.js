@@ -5,7 +5,7 @@ const { OAuth2Client } = require('google-auth-library');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
-const path = require('path');
+
 const crypto = require('crypto');
 const os = require('os');
 const { spawn } = require('child_process');
@@ -649,11 +649,14 @@ app.listen(PORT, () => {
     console.log(`API Gateway (Distributed & Fairness Enabled) running on port ${PORT}`);
 });
 
+const path = require("path");
+
 app.use(express.static(path.join(__dirname, "build")));
 
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "build", "index.html"));
 });
+
 
 
 
